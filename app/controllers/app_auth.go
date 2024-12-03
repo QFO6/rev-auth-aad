@@ -34,6 +34,10 @@ type UserProfile struct {
 	DisplayName              string `json:"displayName"`
 	OfficeLocation           string `json:"officeLocation"`
 	PostalCode               string `json:"postalCode"`
+	Country                  string `json:"country"`
+	State                    string `json:"state"`
+	City                     string `json:"city"`
+	UsageLocation            string `json:"usageLocation"`
 	OnPremisesSamAccountName string `json:"onPremisesSamAccountName"`
 }
 
@@ -120,6 +124,17 @@ func (c *AppAuth) Authenticate(identity string) revel.Result {
 	currentUser.Depart = userProfile.Department
 	currentUser.First = userProfile.GivenName
 	currentUser.Last = userProfile.Surname
+	currentUser.UsageLocation = userProfile.UsageLocation
+	currentUser.AdditionalSettings = make(map[string]interface{})
+	if utilsgo.IsValidString(userProfile.Country) {
+		currentUser.AdditionalSettings["Country"] = userProfile.Country
+	}
+	if utilsgo.IsValidString(userProfile.State) {
+		currentUser.AdditionalSettings["State"] = userProfile.State
+	}
+	if utilsgo.IsValidString(userProfile.City) {
+		currentUser.AdditionalSettings["City"] = userProfile.City
+	}
 	if utilsgo.StrInSlice(currentUser.Identity, adminUsers) {
 		currentUser.IsAdmin = true
 	}

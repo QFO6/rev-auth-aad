@@ -15,16 +15,17 @@ import (
 	"github.com/QFO6/rev-auth-aad/cache"
 	utilsgo "github.com/QFO6/utils-go"
 
-	httpclient "github.com/QFO6/rev-auth-aad/lib/http-client"
-	revmongo "github.com/QFO6/rev-mongo"
 	azidentity "github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	azauthlibgocred "github.com/AzureAD/microsoft-authentication-library-for-go/apps/confidential"
 	azauthlibgopublic "github.com/AzureAD/microsoft-authentication-library-for-go/apps/public"
+	httpclient "github.com/QFO6/rev-auth-aad/lib/http-client"
+	revmongo "github.com/QFO6/rev-mongo"
 	kiotaabstractions "github.com/microsoft/kiota-abstractions-go"
 	msgraphsdk "github.com/microsoftgraph/msgraph-sdk-go"
 	msgraphsdkme "github.com/microsoftgraph/msgraph-sdk-go/me"
-	msgraphsdkusers "github.com/microsoftgraph/msgraph-sdk-go/users"
+	msgraphsdkmodel "github.com/microsoftgraph/msgraph-sdk-go/models"
 	"github.com/microsoftgraph/msgraph-sdk-go/models/odataerrors"
+	msgraphsdkusers "github.com/microsoftgraph/msgraph-sdk-go/users"
 	"github.com/revel/revel"
 )
 
@@ -50,6 +51,8 @@ var (
 	AppRedirectHtmlFilePath = "/public/lib/msal/redirect.html"
 
 	AzureOAuth2KeysUrl = "https://login.microsoftonline.com/common/discovery/v2.0/keys"
+
+	querySelect = []string{"id", "displayName", "givenName", "surname", "mail", "department", "employeeId", "onPremisesSamAccountName", "city", "state", "country", "usageLocation"}
 )
 
 type AuthReply struct {
@@ -65,15 +68,19 @@ type AuthReply struct {
 }
 
 type QueryReply struct {
-	NotExist bool
-	Error    string
-	Account  string
-	Name     string
-	First    string
-	Last     string
-	Email    string
-	Depart   string
-	Avatar   string
+	NotExist      bool
+	Error         string
+	Account       string
+	Name          string
+	First         string
+	Last          string
+	Email         string
+	Depart        string
+	Avatar        string
+	City          string
+	State         string
+	Country       string
+	UsageLocation string
 }
 
 // Init reading AAD configuration
@@ -426,7 +433,7 @@ func Query(userIdentity string) *QueryReply {
 		Count:  &requestCount,
 		Filter: &requestFilter,
 		// "id", "displayName", "givenName", "surname", "jobTitle", "officeLocation", "postalCode", "identities", "mail", "department", "employeeId", "onPremisesSamAccountName"
-		Select: []string{"id", "displayName", "givenName", "surname", "mail", "department", "employeeId", "onPremisesSamAccountName"},
+		Select: querySelect,
 	}
 	requestHeaders := kiotaabstractions.NewRequestHeaders()
 	requestHeaders.Add("ConsistencyLevel", "eventual")
@@ -462,21 +469,7 @@ func Query(userIdentity string) *QueryReply {
 		return queryReply
 	}
 
-	if usersResponseValue[0].GetDisplayName() != nil {
-		queryReply.Name = *usersResponseValue[0].GetDisplayName()
-	}
-	if usersResponseValue[0].GetGivenName() != nil {
-		queryReply.First = *usersResponseValue[0].GetGivenName()
-	}
-	if usersResponseValue[0].GetSurname() != nil {
-		queryReply.Last = *usersResponseValue[0].GetSurname()
-	}
-	if usersResponseValue[0].GetMail() != nil {
-		queryReply.Email = *usersResponseValue[0].GetMail()
-	}
-	if usersResponseValue[0].GetDepartment() != nil {
-		queryReply.Depart = *usersResponseValue[0].GetDepartment()
-	}
+	genQueryReply(usersResponseValue, queryReply)
 
 	// Better to read photo via SDK
 	// userPhoto := userResponseValue[0].GetPhoto()
@@ -509,7 +502,7 @@ func QueryMail(emailAddress string) *QueryReply {
 		Count:  &requestCount,
 		Filter: &requestFilter,
 		// "id", "displayName", "givenName", "surname", "jobTitle", "officeLocation", "postalCode", "identities", "mail", "department", "employeeId", "onPremisesSamAccountName"
-		Select: []string{"id", "displayName", "givenName", "surname", "mail", "department", "employeeId", "onPremisesSamAccountName"},
+		Select: querySelect,
 	}
 	configuration := &msgraphsdkusers.UsersRequestBuilderGetRequestConfiguration{
 		QueryParameters: requestParameters,
@@ -542,6 +535,21 @@ func QueryMail(emailAddress string) *QueryReply {
 		return queryReply
 	}
 
+	genQueryReply(usersResponseValue, queryReply)
+
+	// Better to read photo via SDK
+	// userPhoto := userResponseValue[0].GetPhoto()
+	token, err := AcquireCredentialToken()
+	if err != nil {
+		log.Printf("Acquire token to fetch user photo failed with error: %v", err)
+	} else {
+		queryReply.Avatar = QueryUserPhotoById(*usersResponseValue[0].GetId(), token)
+	}
+
+	return queryReply
+}
+
+func genQueryReply(usersResponseValue []msgraphsdkmodel.Userable, queryReply *QueryReply) {
 	if usersResponseValue[0].GetDisplayName() != nil {
 		queryReply.Name = *usersResponseValue[0].GetDisplayName()
 	}
@@ -557,17 +565,18 @@ func QueryMail(emailAddress string) *QueryReply {
 	if usersResponseValue[0].GetDepartment() != nil {
 		queryReply.Depart = *usersResponseValue[0].GetDepartment()
 	}
-
-	// Better to read photo via SDK
-	// userPhoto := userResponseValue[0].GetPhoto()
-	token, err := AcquireCredentialToken()
-	if err != nil {
-		log.Printf("Acquire token to fetch user photo failed with error: %v", err)
-	} else {
-		queryReply.Avatar = QueryUserPhotoById(*usersResponseValue[0].GetId(), token)
+	if usersResponseValue[0].GetState() != nil {
+		queryReply.State = *usersResponseValue[0].GetState()
 	}
-
-	return queryReply
+	if usersResponseValue[0].GetCity() != nil {
+		queryReply.City = *usersResponseValue[0].GetCity()
+	}
+	if usersResponseValue[0].GetCountry() != nil {
+		queryReply.Country = *usersResponseValue[0].GetCountry()
+	}
+	if usersResponseValue[0].GetUsageLocation() != nil {
+		queryReply.UsageLocation = *usersResponseValue[0].GetUsageLocation()
+	}
 }
 
 func QueryMailAndSave(email string) (*models.User, error) {
@@ -580,12 +589,7 @@ func QueryMailAndSave(email string) (*models.User, error) {
 		return nil, fmt.Errorf("User not exist")
 	}
 
-	user := new(models.User)
-	user.Identity = strings.ToLower(authUser.Account)
-	user.Mail = authUser.Email
-	user.Avatar = authUser.Avatar
-	user.Name = authUser.Name
-	user.Depart = authUser.Depart
+	user := genQueryUser(authUser.Account, authUser)
 	s := revmongo.NewMgoSession()
 	defer s.Close()
 	user.SaveUser(s)
@@ -602,16 +606,35 @@ func QueryAndSave(account string) (*models.User, error) {
 		return nil, fmt.Errorf("User not exist")
 	}
 
+	user := genQueryUser(account, authUser)
+	s := revmongo.NewMgoSession()
+	defer s.Close()
+	user.SaveUser(s)
+	return user, nil
+}
+
+func genQueryUser(account string, authUser *QueryReply) *models.User {
 	user := new(models.User)
 	user.Identity = strings.ToLower(account)
 	user.Mail = authUser.Email
 	user.Avatar = authUser.Avatar
 	user.Name = authUser.Name
 	user.Depart = authUser.Depart
-	s := revmongo.NewMgoSession()
-	defer s.Close()
-	user.SaveUser(s)
-	return user, nil
+	user.UsageLocation = authUser.UsageLocation
+	additionalSettings := make(map[string]interface{})
+	if authUser.Country != "" {
+		additionalSettings["Country"] = authUser.Country
+	}
+	if authUser.State != "" {
+		additionalSettings["State"] = authUser.State
+	}
+	if authUser.City != "" {
+		additionalSettings["City"] = authUser.City
+	}
+	if len(additionalSettings) > 0 {
+		user.AdditionalSettings = additionalSettings
+	}
+	return user
 }
 
 func QueryUserPhotoById(userId, token string) string {

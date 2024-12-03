@@ -28,6 +28,7 @@ type User struct {
 	Mail               string                 `bson:"Mail,omitempty"`
 	Depart             string                 `bson:"Depart,omitempty"`
 	Avatar             string                 `bson:"Avatar,omitempty"`
+	UsageLocation      string                 `bson:"UsageLocation,omitempty"`
 	IsNotExist         bool                   `bson:"IsNotExist,omitempty"`
 	IsAdmin            bool                   `bson:"IsAdmin"`
 	AdditionalSettings map[string]interface{} `bson:"AdditionalSettings,omitempty"`
@@ -60,7 +61,7 @@ func (c *User) GetName() string {
 	return fmt.Sprintf("%s, %s", firstName, lastName)
 }
 
-//Save authorized saUser to local User
+// Save authorized saUser to local User
 func (c *User) SaveUser(s *mgo.Session) error {
 	c.GetAvatar()
 	// orList := []interface{}{}
