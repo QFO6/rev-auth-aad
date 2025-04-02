@@ -1,0 +1,8 @@
+.vscode
+.idea
+
+*.tar.gz
+*/*.DS_Store
+target/
+tmp/
+routes/

@@ -1,0 +1,12 @@
+# Auth APIs
+GET                   /api/v1/auth/logout                                            Auth.Logout
+POST                  /api/v1/auth/logout                                            Auth.Logout
+POST                  /api/v1/auth/login                                             Auth.Authenticate
+GET                   /api/v1/auth/login-check                                       Auth.CheckLogin
+
+GET                   /api/v2/auth/logout                                            AppAuth.Logout
+POST                  /api/v2/auth/login/:identity                                   AppAuth.Authenticate
+GET                   /api/v2/auth/login-check                                       AppAuth.CheckLogin
+
+# When using popup and silent APIs, we recommend setting the redirectUri to a blank page or a page
+GET                   /redirect                                                      AppAuth.AuthRedirect
