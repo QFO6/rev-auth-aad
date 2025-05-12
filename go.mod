@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.2.1
 	github.com/AzureAD/microsoft-authentication-library-for-go v0.8.1
-	github.com/QFO6/rev-mongo/v2 v2.1.6
+	github.com/QFO6/rev-mongo/v2 v2.1.9
 	github.com/QFO6/utils-go v0.1.0
 	github.com/golang-jwt/jwt/v4 v4.4.2
 	github.com/lestrrat-go/jwx/v2 v2.0.8

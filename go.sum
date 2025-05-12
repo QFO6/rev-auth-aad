@@ -8,8 +8,8 @@ github.com/AzureAD/microsoft-authentication-library-for-go v0.8.1 h1:oPdPEZFSbl7
 github.com/AzureAD/microsoft-authentication-library-for-go v0.8.1/go.mod h1:4qFor3D/HDsvBME35Xy9rwW9DecL+M2sNw1ybjPtwA0=
 github.com/QFO6/common-go v0.1.0 h1:ZgYbUFSLx1hXPwThoWyfDTDDf4g5EGMVGXhmovib8lA=
 github.com/QFO6/common-go v0.1.0/go.mod h1:1M4nBOEmiqpmNBM9wMSikYkqI4HHZXahyO/GORcQwcI=
-github.com/QFO6/rev-mongo/v2 v2.1.6 h1:BAdFkSZB4LimKvC/e8+g//6CLE8W7BrO48mM7Gm9/3A=
-github.com/QFO6/rev-mongo/v2 v2.1.6/go.mod h1:Z7ng9EaFPUU1nbdqWpwnHoR78DoBLeCm4oapkjjEvdo=
+github.com/QFO6/rev-mongo/v2 v2.1.9 h1:Pju11wh0Ox0BdSx4oLnyzfQtFn9OBYLTnhFBtFQVxdo=
+github.com/QFO6/rev-mongo/v2 v2.1.9/go.mod h1:Z7ng9EaFPUU1nbdqWpwnHoR78DoBLeCm4oapkjjEvdo=
 github.com/QFO6/utils-go v0.1.0 h1:DQsT8AXhcIJXq3ZaRV9X2/9qdn+eCX7BxVPR+6CoJSA=
 github.com/QFO6/utils-go v0.1.0/go.mod h1:snqUTDzZXhPJcVbHi+MmAua58YYyhYq4T3/5TE1BS5M=
 github.com/bradfitz/gomemcache v0.0.0-20220106215444-fb4bf637b56d h1:pVrfxiGfwelyab6n21ZBkbkmbevaf+WvMIiR7sr97hw=
